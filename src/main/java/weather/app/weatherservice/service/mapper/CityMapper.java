@@ -7,6 +7,6 @@ import weather.app.weatherservice.model.City;
 
 @Mapper(componentModel = "spring")
 public abstract class CityMapper implements CommonMapper<CityDto, City>{
-    @Mapping(target = "isVisible", expression = "java(true)")
+    @Mapping(target = "visible", expression = "java(true)")
     public abstract City toEntity(CityDto cityDto);
 }

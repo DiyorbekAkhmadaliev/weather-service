@@ -22,7 +22,13 @@ public class CityServiceImpl implements CityService {
 
     @Override
     public Mono<ResponseDto<CityDto>> addCity(CityDto cityDto) {
-        return cityRepository.findById(cityDto.getId())
+        if (cityDto == null) {
+            return Mono.just(ResponseDto.<CityDto>builder()
+                    .message(NULL_VALUE)
+                    .code(VALIDATION_ERROR_CODE)
+                    .build());
+        }
+        return cityRepository.findByName(cityDto.getName())
                 .map(city -> ResponseDto.<CityDto>builder()
                         .message(DUPLICATE_ERROR + " City already exists!")
                         .code(VALIDATION_ERROR_CODE)
@@ -59,7 +65,9 @@ public class CityServiceImpl implements CityService {
                     if (cityDto.getName() != null) {
                         city.setName(cityDto.getName());
                     }
-
+                    if (cityDto.getCountry() != null) {
+                        city.setCountry(cityDto.getCountry());
+                    }
 
                     return cityRepository.save(city)
                             .map(editedCity -> ResponseDto.<CityDto>builder()
