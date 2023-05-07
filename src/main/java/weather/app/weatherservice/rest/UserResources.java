@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import weather.app.weatherservice.dto.LoginDto;
 import weather.app.weatherservice.dto.ResponseDto;
 import weather.app.weatherservice.dto.UserDto;
 import weather.app.weatherservice.service.UserServices;
@@ -18,6 +19,11 @@ public class UserResources {
     @PostMapping("sign-up")
     public Mono<ResponseDto<UserDto>> addUser(@RequestBody UserDto userDto){
          return userServices.addUser(userDto);
+    }
+
+    @PostMapping("register")
+    public Mono<ResponseDto<Void>> login(@RequestBody LoginDto loginDto){
+        return userServices.login(loginDto);
     }
 
     @GetMapping("user-list")

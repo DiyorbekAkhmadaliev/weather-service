@@ -2,6 +2,7 @@ package weather.app.weatherservice.service;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import weather.app.weatherservice.dto.LoginDto;
 import weather.app.weatherservice.dto.ResponseDto;
 import weather.app.weatherservice.dto.UserDto;
 
@@ -15,5 +16,5 @@ public interface UserServices {
     Mono<ResponseDto<UserDto>> getUserById(Integer id);
 
 
-
+    Mono<ResponseDto<Void>> login(LoginDto loginDto);
 }
