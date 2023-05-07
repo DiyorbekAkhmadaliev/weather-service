@@ -5,13 +5,14 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.stereotype.Service;
-import uz.gc.weatherservice.model.Users;
+import weather.app.weatherservice.model.User;
 
 import java.sql.Date;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
+import java.util.Collection;
 
 @Service
 @RequiredArgsConstructor
@@ -21,7 +22,7 @@ public class JwtService {
     private String secretKey;
     private final Gson gson;
 
-    public String generateToken(String user, List<String> roles){
+    public String generateToken(String user, Collection<? extends GrantedAuthority> roles){
         return Jwts.builder()
                 .setSubject(user)
                 .claim("auth", roles)
@@ -38,7 +39,7 @@ public class JwtService {
                 .parseClaimsJws(token)
                 .getBody()
                 .getSubject();
-        return gson.fromJson(json, Users.class).getUsername();
+        return gson.fromJson(json, User.class).getUsername();
     }
 
     public <T> T getClaim(String token, String claimName, Class<T> type){

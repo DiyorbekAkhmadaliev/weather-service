@@ -10,4 +10,6 @@ import weather.app.weatherservice.model.City;
 public interface CityRepository extends ReactiveCrudRepository<City, Integer> {
 
     Mono<CityDto> findByName(String name);
+
+    Mono<City> findByIdAndVisible(Integer id, boolean visible);
 }

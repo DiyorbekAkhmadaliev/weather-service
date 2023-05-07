@@ -31,7 +31,6 @@ public class User implements UserDetails{
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private boolean enabled;
-    @Transient
     private String role;
 
     @Override
@@ -45,7 +44,7 @@ public class User implements UserDetails{
 
     @Override
     public String getUsername() {
-        return null;
+        return this.email;
     }
 
     @Override

@@ -55,6 +55,11 @@ databaseChangeLog:
                   defaultValue: true
                   constraints:
                     nullable: false
+              - column:
+                  name: role
+                  type: varchar(25)
+                  constraints:
+                    nullable: false
         - createTable:
             schema: public
             tableName: cities

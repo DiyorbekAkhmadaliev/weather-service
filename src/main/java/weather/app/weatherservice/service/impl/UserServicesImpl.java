@@ -2,25 +2,30 @@ package weather.app.weatherservice.service.impl;
 
 import com.google.gson.Gson;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
 import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import weather.app.weatherservice.dto.LoginDto;
 import weather.app.weatherservice.dto.ResponseDto;
+import weather.app.weatherservice.dto.SubscriptionDto;
 import weather.app.weatherservice.dto.UserDto;
+import weather.app.weatherservice.model.Subscriptions;
 import weather.app.weatherservice.model.User;
+import weather.app.weatherservice.repository.CityRepository;
+import weather.app.weatherservice.repository.SubscriptionRepository;
 import weather.app.weatherservice.repository.UserRepository;
 import weather.app.weatherservice.security.JwtService;
 import weather.app.weatherservice.service.UserServices;
+import weather.app.weatherservice.service.mapper.SubscriptionMapper;
 import weather.app.weatherservice.service.mapper.UserMapper;
+import weather.app.weatherservice.service.validator.AppStatusCodes;
 import weather.app.weatherservice.service.validator.AppStatusMessages;
 
 import java.time.LocalDateTime;
-import java.util.stream.Collectors;
 
 import static weather.app.weatherservice.service.validator.AppStatusCodes.*;
 import static weather.app.weatherservice.service.validator.AppStatusMessages.*;
@@ -34,6 +39,9 @@ public class UserServicesImpl implements UserServices, ReactiveUserDetailsServic
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final Gson gson;
+    private final SubscriptionRepository subscriptionRepository;
+    private final CityRepository cityRepository;
+    private final SubscriptionMapper subscriptionMapper;
 
 
     @Override
@@ -134,31 +142,42 @@ public class UserServicesImpl implements UserServices, ReactiveUserDetailsServic
     }
 
     @Override
-    public Mono<ResponseDto<Void>> login(LoginDto loginDto) {
-        Mono<User> user = userRepository.findByEmail(loginDto.getEmail());
-        return user.filter(u ->
-                        passwordEncoder.matches(loginDto.getPassword(), u.getPassword()))
-                .flatMap(this::loadUserWithRoles)
-                .map(u -> ResponseDto.<String>builder()
+    public Mono<ResponseDto<String>> login(LoginDto loginDto) {
+        return userRepository.findByEmailAndEnabled(loginDto.getEmail(), true)
+                .filter(user -> passwordEncoder.matches(loginDto.getPassword(), user.getPassword()))
+                .map(user -> ResponseDto.<String>builder()
+                        .code(OK_CODE)
+                        .message(OK)
                         .success(true)
-                        .message("OK")
-                        .data(jwtService.generateToken(gson.toJson(u), u.getRoles().stream().map(Authorities::getName).collect(Collectors.toList())))
+                        .data(jwtService.generateToken(gson.toJson(user), user.getAuthorities()))
                         .build())
                 .defaultIfEmpty(ResponseDto.<String>builder()
-                        .code(1)
-                        .message("Email or password is incorrect")
+                        .code(VALIDATION_ERROR_CODE)
+                        .message(VALIDATION_ERROR)
                         .build());
     }
-    private Mono<User> loadUserWithRoles(User u){
-        return Mono.just(u)
-                .zipWith(authoritiesRepository.getAuthoritiesByUserId(u.getId()).collectList())
-                .map(result -> {
-                    result.getT1().setRoles(result.getT2());
-                    return result.getT1();
+
+    @Override
+    public Mono<ResponseDto<SubscriptionDto>> subscribeToCity(Integer cityId) {
+        return ReactiveSecurityContextHolder.getContext()
+                .flatMap(user -> {
+                    User principal = (User) user.getAuthentication().getPrincipal();
+                    return subscriptionRepository.save(Subscriptions.builder()
+                                    .userId(principal.getId())
+                                    .cityId(cityId)
+                                    .subscribedAt(LocalDateTime.now())
+                                    .build())
+                            .map(s -> ResponseDto.<SubscriptionDto>builder()
+                                    .code(OK_CODE)
+                                    .message(OK)
+                                    .success(true)
+                                    .build());
                 });
     }
+
+
     @Override
     public Mono<UserDetails> findByUsername(String username) {
-        return  null;
+        return null;
     }
 }

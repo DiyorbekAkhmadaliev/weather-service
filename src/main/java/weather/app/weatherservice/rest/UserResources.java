@@ -6,6 +6,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import weather.app.weatherservice.dto.LoginDto;
 import weather.app.weatherservice.dto.ResponseDto;
+import weather.app.weatherservice.dto.SubscriptionDto;
 import weather.app.weatherservice.dto.UserDto;
 import weather.app.weatherservice.service.UserServices;
 
@@ -22,8 +23,13 @@ public class UserResources {
     }
 
     @PostMapping("register")
-    public Mono<ResponseDto<Void>> login(@RequestBody LoginDto loginDto){
+    public Mono<ResponseDto<String>> login(@RequestBody LoginDto loginDto){
         return userServices.login(loginDto);
+    }
+
+    @PostMapping("subscribe-to-city")
+    public Mono<ResponseDto<SubscriptionDto>> subscribeToCity(@RequestParam Integer id){
+        return userServices.subscribeToCity(id);
     }
 
     @GetMapping("user-list")
