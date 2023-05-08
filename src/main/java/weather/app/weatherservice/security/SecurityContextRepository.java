@@ -28,11 +28,7 @@ public class SecurityContextRepository implements ServerSecurityContextRepositor
         return null;
     }
 
-    /**
-     * Gets token from request and validates it. After successfully validation user info will be added to ReactiveSecurityContextHolder
-     * @param exchange Request instance
-     * @return SecurityContext with authentication info
-     */
+
     @Override
     public Mono<SecurityContext> load(ServerWebExchange exchange) {
         ServerHttpRequest request = exchange.getRequest();
